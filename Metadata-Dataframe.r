@@ -7,6 +7,9 @@ dir_path <- "data-store/data/iplant/home/shared/geri/geri-harmonized/metadata/sa
 # where to print the dataframe
 print_df_path = "Geri-Metadata-df-Maker/saeon_output.csv"
 
+# for seperating list values in the dataframe
+divider='#'
+
 # get a list of the file names in the directory
 list_of_files <- list.files( path=dir_path )
 
@@ -23,7 +26,7 @@ for (file in list_of_files)
   root <- xmlRoot( xml_data )
   
   # scrape the xml file and get the data in a named list
-  val_arr <- scrape_xml( root )
+  val_arr <- scrape_xml( root, divider=divider )
   
   # add that struct to the larger dataframe
   df <- rbind( df, val_arr )
