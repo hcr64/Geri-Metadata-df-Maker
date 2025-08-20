@@ -7,10 +7,13 @@ library(XML)
 # a function to scrape all the data from an XMl file,
 # and returns a named list of the data inside
 # pass the root of the file as an arg, and a seperator 
-scrape_xml <- function( xml_root, divider='-' )
+scrape_xml <- function( xml_root, arr, divider='-' )
 {
+  # a list of nodes that cannot be directly added to the df
+  special_conditions <- list( "geoLocations" )
+  
   # get the number of roots in the file
-  num_roots <- sum( sapply( xmlChildren( xml_root ), xmlName ) != "" )
+  num_roots <- length( xmlChildren( xml_root ) )
   
   #the array storing the data with the keys being the xml tags
   root_val_arr <- list()
@@ -25,7 +28,7 @@ scrape_xml <- function( xml_root, divider='-' )
     root_name <- xmlName( curr_root ) 
     
     # if the root has a subroot,
-    if( sum( sapply( xmlChildren( curr_root ), xmlName ) != "" ) > 1 )
+    if( length( xmlChildren( curr_root ) ) > 1 )
     {
       # the final list of data to be returned
       list_of_data <- list() # xmlValue( xml_root[[1]] )
@@ -47,18 +50,28 @@ scrape_xml <- function( xml_root, divider='-' )
       list_of_data <- list_of_data[list_of_data != ""]
       
       # return the list as a string
-      root_value <- paste( unlist( list_of_data ), collapse=divider )
+      root_value <- "" # paste( unlist( list_of_data ), collapse=divider )
     }
     
     # otherwise just set the root_value var to the value
     else
     {
-      root_value <- xmlValue( xml_root[[i]] )
+      # if the root is not in the special conditions list
+      if( !(xmlName( xml_root[[i]] ) %in% special_conditions) )
+      {
+        root_value <- xmlValue( xml_root[[i]] )
+      }
     }
     
     # add the data as a string to the list of data
     root_val_arr[[ root_name ]] <- root_value
   }
+
+  # add the coordinates to the array, each in their own column
+  root_val_arr[["pointLatitude"]] <- xmlValue( xmlElementsByTagName(xml_root, "pointLatitude", recursive=TRUE)[[1]] )
+  root_val_arr[["pointLongitude"]] <- xmlValue( xmlElementsByTagName(xml_root, "pointLongitude", recursive=TRUE)[[1]] )
+  
+  # add only one date to the array
   
   # return the array
   root_val_arr
