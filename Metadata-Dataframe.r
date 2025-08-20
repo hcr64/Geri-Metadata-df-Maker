@@ -26,7 +26,7 @@ for (file in list_of_files)
   root <- xmlRoot( xml_data )
   
   # scrape the xml file and get the data in a named list
-  val_arr <- scrape_xml( root, divider=divider )
+  val_arr <- scrape_xml( root, val_arr, divider=divider )
   
   # add that struct to the larger dataframe
   df <- rbind( df, val_arr )
