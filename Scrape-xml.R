@@ -10,7 +10,7 @@ library(XML)
 scrape_xml <- function( xml_root, arr, divider='-' )
 {
   # a list of nodes that cannot be directly added to the df
-  special_conditions <- list( "geoLocations" )
+  special_conditions <- list( "geoLocations", "contributors", "subjects", "dates" )
   
   # get the number of roots in the file
   num_roots <- length( xmlChildren( xml_root ) )
@@ -50,7 +50,7 @@ scrape_xml <- function( xml_root, arr, divider='-' )
       list_of_data <- list_of_data[list_of_data != ""]
       
       # return the list as a string
-      root_value <- "" # paste( unlist( list_of_data ), collapse=divider )
+      root_value <- paste( unlist( list_of_data ), collapse=divider )
     }
     
     # otherwise just set the root_value var to the value
@@ -72,6 +72,20 @@ scrape_xml <- function( xml_root, arr, divider='-' )
   root_val_arr[["pointLongitude"]] <- xmlValue( xmlElementsByTagName(xml_root, "pointLongitude", recursive=TRUE)[[1]] )
   
   # add only one date to the array
+  root_val_arr[["dates"]] <- xmlValue( xmlChildren(xml_root[["dates"]])[[3]] )
+  
+  # get a list of the contributors' names
+  contributor_names <- xmlValue( xmlElementsByTagName(xml_root, "contributorName", recursive=TRUE) )
+  
+  # turn it into a string using the divider, and add it to the correct spot in the array
+  root_val_arr[["contributors"]] <- paste( unlist( contributor_names ), collapse=divider )
+  
+  # do something about the subjects too
+  # keep all but the 1st and 5th entries for the subjects
+  subject_names <- xmlValue( xmlElementsByTagName(xml_root, "subject", recursive=TRUE) )
+  
+  # put the appropriate subjects in the array
+  root_val_arr[["subjects"]] <- paste( unlist( subject_names[-c(1, 5)] ), collapse=divider )
   
   # return the array
   root_val_arr
